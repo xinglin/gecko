@@ -2877,8 +2877,10 @@ static int gecko_message(struct dm_target *ti, unsigned argc, char **argv)
                                                 block_to_sector(dmg->tail)));
         } else if (strcmp(argv[0], "gc-off") == 0) {
                 set_bit(DM_GECKO_GC_FORCE_STOP, &dmg->flags);
+                clear_bit(DM_GECKO_GC_STARTED, &dmg->flags);
         } else if (strcmp(argv[0], "gc-on") == 0) {
                 clear_bit(DM_GECKO_GC_FORCE_STOP, &dmg->flags);
+                set_bit(DM_GECKO_GC_STARTED, &dmg->flags);
         } else if (strcmp(argv[0], "detail-on") == 0) {
                 set_bit(DM_GECKO_STATUS_DETAILED, &dmg->flags);
         } else if (strcmp(argv[0], "detail-off") == 0) {
