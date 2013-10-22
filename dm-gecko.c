@@ -1997,7 +1997,7 @@ static int load_dm_gecko(struct dm_target *ti, struct dm_gecko *dmg)
         dmg->low_pow_state = dmg_meta->low_pow_state;
 
         disk_cnt = dmg_meta->disk_map_cnt * dmg_meta->stripes;
-        if (disk_cnt * sizeof(*dmg_devs) > PAGE_SIZE) {
+        if (disk_cnt * sizeof(*dmg_devs) + sizeof(*dmg_meta) > PAGE_SIZE) {
                 printk(DM_GECKO_PREFIX "too many disks\n");
                 err = -EINVAL;
                 goto out_close;
@@ -2488,6 +2488,7 @@ out1:
 static long (*sys_rename_wrapper)(const char __user *oldname,
                                   const char __user *newname) = NULL;
 
+/* store gecko metadata persistently */
 static int store_dm_gecko(struct dm_gecko *dmg)
 {
         struct dm_gecko_persistent_metadata* dmg_meta;
@@ -2577,7 +2578,7 @@ static int store_dm_gecko(struct dm_gecko *dmg)
                 }
         }
 
-        BUG_ON(((unsigned long)dmg_devs) - ((unsigned long)dmg_devs_offset)
+        BUG_ON(((unsigned long)dmg_devs) - ((unsigned long)dmg_meta)
                > PAGE_SIZE);
         /* Write PAGE_SIZE worth of data, to align subsequent maps */
         sz = vfs_write(file, page, PAGE_SIZE, &pos);
