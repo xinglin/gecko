@@ -201,11 +201,11 @@ enum {  // dm_gecko->flags bit positions
 
 struct dm_gecko {
         spinlock_t lock;
-        atomic_t total_jobs;        /* used to safely destroy the target */
+        atomic_t total_jobs;    /* used to safely destroy the target */
         struct list_head *buckets;
         int htable_size;
-        u32 *d_map;
-        u32 *r_map;
+        u32 *d_map;             /* direct map */        
+        u32 *r_map;             /* reversed map */
         u32 tail;
         u32 persistent_tail;
         u32 head;
