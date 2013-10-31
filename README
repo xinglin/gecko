@@ -1,0 +1,26 @@
+
+Gecko Log Structured Storage System (LSSS, or LS3)
+
+The implementation consists of a device-mapper kernel module.
+ 
+ 
+The Gecko LS3 overlays a log abstraction over a multi-disk RAID
+matrix.  All writes are appends to the log. Reads are returned from
+the locations on disk which may be anywhere in the log. To save
+power, the redundant disks may be turned off, trading off read
+throughput for power savings.  For example, in a RAID-1
+configuration, all `mirror' disks (but the disk that belongs to the
+log head, hence the one that is being actively written) can be
+turned off---reads are returned from the `primary' disks. The
+scheme generalizes to RAID-5 and RAID-6 respectively. Furthermore,
+RAID-5 is superseded by RAID-4, for which the parity disk(s) are no
+longer a bottleneck due to the append-only nature of the writes
+hitting the log.
+ 
+Since this is a prototype, it does not yet implement live-RAID
+recovery.  Ideally, Gecko could be a simple linear layer on top of
+the conventional RAID implementations, however, additional
+functionality should be available between the layers in order to
+maintain efficiency, e.g. the Gecko LS3 layer must be able to put
+the disks of the underlying array in various power modes, and to
+direct reads to the powered-on mirror disks.
