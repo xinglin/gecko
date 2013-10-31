@@ -2215,13 +2215,8 @@ static int gecko_ctr(struct dm_target *ti, unsigned int argc, char *argv[])
                 goto out2;
         }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 0, 0)
-        dmg->kcopyd_client = dmg_kcopyd_client_create();
-        err = IS_ERR(dmg->kcopyd_client) ? PTR_ERR(dmg->kcopyd_client) : 0;
-#else
         err = dmg_kcopyd_client_create(DM_GECKO_GC_COPY_PAGES,
                                        &dmg->kcopyd_client);
-#endif
         if (err) {
                 ti->error =
                     DM_GECKO_PREFIX "unable to register as a kcopyd client";
@@ -2229,7 +2224,11 @@ static int gecko_ctr(struct dm_target *ti, unsigned int argc, char *argv[])
                 goto out3;
         }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 0, 0)
+        dmg->io_client = dm_io_client_create();
+#else
         dmg->io_client = dm_io_client_create(DM_GECKO_GC_COPY_PAGES);
+#endif
         if (IS_ERR(dmg->io_client)) {
                 ti->error =
                     DM_GECKO_PREFIX "unable to register as an io client";
@@ -2341,6 +2340,7 @@ static int gecko_ctr(struct dm_target *ti, unsigned int argc, char *argv[])
                                 printk("%s\n", ti->error);
                                 goto out6;
                         }
+
 			// TODO(tudorm): take the min size
                         if (seg->dev[0]->bdev->bd_inode->i_size !=
                             seg->dev[j]->bdev->bd_inode->i_size) {
@@ -2379,6 +2379,8 @@ static int gecko_ctr(struct dm_target *ti, unsigned int argc, char *argv[])
                 err = -EINVAL;
                 goto out6;
 	}
+
+        /* TODO: need to round to minimal block numbers */
 	dmg->size = sector_to_block(dmg->disk_map.len);
         /* (dmg->size-1) for circular buffer logic: one slot wasted to
          * distinguish between full and empty circular buffer. */

@@ -24,6 +24,7 @@
 #include <linux/vmalloc.h>
 #include <linux/workqueue.h>
 #include <linux/mutex.h>
+#include <linux/version.h>
 #include <linux/device-mapper.h>
 
 #include "dmg-kcopyd.h"
@@ -546,8 +547,12 @@ int dmg_kcopyd_client_create(unsigned int nr_pages,
 	r = client_alloc_pages(kc, nr_pages);
 	if (r)
 		goto bad_client_pages;
-
+		
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 0, 0)
+	kc->io_client = dm_io_client_create();
+#else 
 	kc->io_client = dm_io_client_create(nr_pages);
+#endif
 	if (IS_ERR(kc->io_client)) {
 		r = PTR_ERR(kc->io_client);
 		goto bad_io_client;
